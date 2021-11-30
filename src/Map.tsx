@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 import { Wrapper, Status } from "@googlemaps/react-wrapper";
 import { osterbroGeoJson } from './OsterbroGeoJson';
 import { copanhagenDistrictsGeoJson } from './CopanhagenDistrictsGeoJson';
+import { MAP_API_KEY } from './Configs';
 
 
 interface MapProps {
@@ -36,7 +37,6 @@ class Map extends Component<MapProps, MapState> {
         zoomControl: false,
         styles: [
           {
-            "featureType": "administrative",
             "elementType": "labels",
             "stylers": [
               {
@@ -45,10 +45,22 @@ class Map extends Component<MapProps, MapState> {
             ]
           },
           {
-            "featureType": "administrative.province",
+            "featureType": "administrative",
             "stylers": [
               {
                 "visibility": "off"
+              }
+            ]
+          },
+          {
+            "featureType": "administrative.province",
+            "elementType": "all",
+            "stylers": [
+              {
+                "visibility": "on"
+              },
+              {
+                color: "red"
               }
             ]
           },
@@ -57,13 +69,7 @@ class Map extends Component<MapProps, MapState> {
             "elementType": "all",
             "stylers": [
               {
-                "saturation": -100
-              },
-              {
-                "lightness": 65
-              },
-              {
-                "visibility": "off"
+                "color": "#EDEDE3"
               }
             ]
           },
@@ -71,12 +77,6 @@ class Map extends Component<MapProps, MapState> {
             "featureType": "poi",
             "elementType": "all",
             "stylers": [
-              {
-                "saturation": -100
-              },
-              {
-                "lightness": "50"
-              },
               {
                 "visibility": "off"
               }
@@ -87,9 +87,6 @@ class Map extends Component<MapProps, MapState> {
             "elementType": "all",
             "stylers": [
               {
-                "saturation": "-100"
-              },
-              {
                 "visibility": "off"
               }
             ]
@@ -99,7 +96,7 @@ class Map extends Component<MapProps, MapState> {
             "elementType": "all",
             "stylers": [
               {
-                "visibility": "on"
+                "visibility": "off"
               }
             ]
           },
@@ -108,20 +105,15 @@ class Map extends Component<MapProps, MapState> {
             "elementType": "all",
             "stylers": [
               {
-                "lightness": "30"
-              },
-              {
-                "visibility": "off"
+                "visibility": "on"
               }
             ]
           },
+
           {
             "featureType": "road.local",
             "elementType": "all",
             "stylers": [
-              {
-                "lightness": "40"
-              },
               {
                 "visibility": "off"
               }
@@ -132,9 +124,6 @@ class Map extends Component<MapProps, MapState> {
             "elementType": "all",
             "stylers": [
               {
-                "saturation": -100
-              },
-              {
                 "visibility": "simplified"
               },
               {
@@ -144,51 +133,36 @@ class Map extends Component<MapProps, MapState> {
           },
           {
             "featureType": "water",
-            "elementType": "geometry",
             "stylers": [
               {
-                "hue": "#ffff00"
-              },
-              {
-                "lightness": -25
-              },
-              {
-                "saturation": -97
+                "color": "#DCDCC8"
               }
             ]
           },
-          {
-            "featureType": "water",
-            "elementType": "labels",
-            "stylers": [
-              {
-                "lightness": -25
-              },
-              {
-                "saturation": -100
-              }
-            ]
-          }
+          { "featureType": "road.highway", elementType: "labels", stylers: [{ visibility: "off" }] }, //turns off highway labels
+          { "featureType": "road.arterial", elementType: "labels", stylers: [{ visibility: "off" }] }, //turns off arterial roads labels
+          { "featureType": "road.local", elementType: "labels", stylers: [{ visibility: "off" }] }  //turns off local roads labels
         ],
         streetViewControl: false,
         panControl: false,
         mapTypeControl: false,
       });
 
-      
+
 
 
       const labelsList = [
-        { position: { lat: 55.6991, lng: 12.55423 }, title: "NØRREBRO" },
-        { position: { lat: 55.6771, lng: 12.5133 }, title: "FREDERIKSBERG" },
-        { position: { lat: 55.7092, lng: 12.5775 }, title: "Østerbro" },
-        { position: { lat: 55.6801, lng: 12.5800 }, title: "INDRE BY" },
-        { position: { lat: 55.6639, lng: 12.5425 }, title: "VESTERBRO" },
+        { position: { lat: 55.6991, lng: 12.55423 }, title: "NØRREBRO", marker: undefined },
+        { position: { lat: 55.6771, lng: 12.5133 }, title: "FREDERIKSBERG", marker: undefined },
+        { position: { lat: 55.7092, lng: 12.5775 }, title: "Østerbro", marker: undefined },
+        { position: { lat: 55.6801, lng: 12.5800 }, title: "INDRE BY", marker: undefined },
+        { position: { lat: 55.6639, lng: 12.5425 }, title: "VESTERBRO", marker: undefined },
 
       ]
 
-      labelsList.forEach(({ position, title }) => {
-        const NØRREBRO = new google.maps.Marker({
+      labelsList.forEach((labelsList) => {
+        const { position, title } = labelsList;
+        labelsList.marker = new google.maps.Marker({
           position,
           map,
           icon: {
@@ -224,73 +198,110 @@ class Map extends Component<MapProps, MapState> {
         });
       })
 
-
-      const outerCoords = [...osterbroGeoJson
-      ];
-
-
-      
-
       const lineSymbol = {
         path: google.maps.SymbolPath.CIRCLE,
         fillOpacity: 1,
-        scale: 2
+        scale: 2,
+        strokeColor: '#ffffff'
       };
 
-      // const polylineDotted = new google.maps.Polyline({
-      //   strokeColor: '#000000',
-      //   strokeOpacity: 0,
-      //   icons: [{
-      //     icon: lineSymbol,
-      //     offset: '0',
-      //     repeat: '10px'
-      //   }],
-      //   path: outerCoords,
-      //   map: map
-      // });
 
+      const lineCoordinates: Array<any> = [];
+      let drawnPolylineDotted: any;
       copanhagenDistrictsGeoJson.features.forEach(({ geometry, properties }) => {
-        let districtBorders = geometry.coordinates[0][0].map((d)=>({lat:d[1], lng:d[0]}));
+        let districtBorders = geometry.coordinates[0][0].filter((x, i) => i % 10 === 0).map((d) => ({ lat: d[1], lng: d[0] }));
         const polylineDotted = new google.maps.Polyline({
-          strokeColor: '#000000',
-          strokeOpacity: 0,
-          icons: [{
-            icon: lineSymbol,
-            offset: '0',
-            repeat: '10px'
-          }],
+          strokeColor: '#ffffff',
+          strokeOpacity: 0.5,
+          // icons: [{
+          //   icon: lineSymbol,
+          //   offset: '0',
+          //   repeat: '10px'
+          // }],
           path: districtBorders,
           map: map
         });
-        const polygon = new google.maps.Polygon({
-        paths: districtBorders, 
-        strokeColor: "transparent",
-        strokeOpacity: 0.8,
-        strokeWeight: 2,
-        fillColor: "transparent",
-        fillOpacity: 0.35,
-        map: map
-      });
-        polygon.addListener("click", (mapsMouseEvent: any) => {
-            console.log(properties);
+        // // const polygon = new google.maps.Polygon({
+        // //   paths: districtBorders,
+        // //   strokeColor: "transparent",
+        // //   strokeOpacity: 0.8,
+        // //   strokeWeight: 2,
+        // //   fillColor: "transparent",
+        // //   fillOpacity: 0.35,
+        // //   map: map
+        // // });
+        // polygon.addListener("click", (mapsMouseEvent: any) => {
+        //   console.log(properties);
+        // });
+
+
+        polylineDotted.addListener("click", (mapsMouseEvent: any) => {
+          const lineSymbolDrawn = {
+            path: google.maps.SymbolPath.CIRCLE,
+            fillOpacity: 1,
+            scale: 2,
+            strokeColor: '#000000'
+          };
+          const position = { lat: mapsMouseEvent.latLng.lat(), lng: mapsMouseEvent.latLng.lng() };
+          lineCoordinates.push(position);
+          console.clear();
+          console.log(JSON.stringify(lineCoordinates));
+          if (drawnPolylineDotted) {
+            drawnPolylineDotted.setMap(null);
+          }
+          drawnPolylineDotted = new google.maps.Polyline({
+            strokeColor: '#00000',
+            strokeOpacity: 1,
+            icons: [{
+              icon: lineSymbolDrawn,
+              offset: '0',
+              repeat: '10px'
+            }],
+            path: lineCoordinates,
+            map: map
           });
+        });
+
       });
 
-      // polygon.setMap(map);
-
-      // map.addListener("click", (mapsMouseEvent: any) => {
-      //   alert(`Clicked -> latitude: ${mapsMouseEvent.latLng.lat()}, longitude: ${mapsMouseEvent.latLng.lng()} `);
-      // });
-
-     
+      document.addEventListener("keypress", (mapsKeyboardEvent: KeyboardEvent) => {
+        console.log(mapsKeyboardEvent);
+      })
+      map.addListener("click", (mapsMouseEvent: any) => {
+        const lineSymbolDrawn = {
+          path: google.maps.SymbolPath.CIRCLE,
+          fillOpacity: 1,
+          scale: 2,
+          strokeColor: '#000000'
+        };
+        const position = { lat: mapsMouseEvent.latLng.lat(), lng: mapsMouseEvent.latLng.lng() };
+        lineCoordinates.push(position);
+        console.clear();
+        console.log(JSON.stringify(lineCoordinates));
+        if (drawnPolylineDotted) {
+          drawnPolylineDotted.setMap(null);
+        }
+        drawnPolylineDotted = new google.maps.Polyline({
+          strokeColor: '#000000',
+          strokeOpacity: 0,
+          icons: [{
+            icon: lineSymbolDrawn,
+            offset: '0',
+            repeat: '10px'
+          }],
+          path: lineCoordinates,
+          map: map
+        });
+      });
     }, 200);
     // @ts-ignore
+
 
   }
 
   render() {
     return (
-      <Wrapper apiKey="AIzaSyAsP_Uz4aLEKF1WYeuhye2aKIiCT6BIKfY">
+      <Wrapper apiKey={MAP_API_KEY}>
         <div ref={ref => this.mapContainer = ref} style={{ width: window.innerWidth, height: window.innerHeight }}>
 
         </div>
@@ -300,3 +311,5 @@ class Map extends Component<MapProps, MapState> {
 }
 
 export default Map;
+
+
