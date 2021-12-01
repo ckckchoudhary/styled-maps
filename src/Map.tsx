@@ -5,6 +5,7 @@ import { Wrapper, Status } from "@googlemaps/react-wrapper";
 import { osterbroGeoJson } from './OsterbroGeoJson';
 import { copanhagenDistrictsGeoJson } from './CopanhagenDistrictsGeoJson';
 import { MAP_API_KEY } from './Configs';
+import { DistBordersMap } from './DistrictsBordersMap';
 
 
 interface MapProps {
@@ -198,6 +199,58 @@ class Map extends Component<MapProps, MapState> {
         });
       })
 
+
+
+      Object.values(DistBordersMap).forEach(distBorder => {
+
+        const lineSymbolDrawn = {
+          path: google.maps.SymbolPath.CIRCLE,
+          fillOpacity: 1,
+          scale: 1.6,
+          strokeColor: '#000000'
+        };
+        new google.maps.Polyline({
+          strokeColor: '#000000',
+          strokeOpacity: 0,
+          icons: [{
+            icon: lineSymbolDrawn,
+            offset: '0',
+            repeat: '8px'
+          }],
+          path: distBorder,
+          map: map
+        });
+
+      });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       const lineSymbol = {
         path: google.maps.SymbolPath.CIRCLE,
         fillOpacity: 1,
@@ -211,8 +264,8 @@ class Map extends Component<MapProps, MapState> {
       copanhagenDistrictsGeoJson.features.forEach(({ geometry, properties }) => {
         let districtBorders = geometry.coordinates[0][0].filter((x, i) => i % 10 === 0).map((d) => ({ lat: d[1], lng: d[0] }));
         const polylineDotted = new google.maps.Polyline({
-          strokeColor: '#ffffff',
-          strokeOpacity: 0.5,
+          strokeColor: 'red',
+          strokeOpacity: 0,
           // icons: [{
           //   icon: lineSymbol,
           //   offset: '0',
@@ -295,8 +348,6 @@ class Map extends Component<MapProps, MapState> {
       });
     }, 200);
     // @ts-ignore
-
-
   }
 
   render() {
